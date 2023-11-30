@@ -1,0 +1,57 @@
+/* Global Styles */
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    margin-top: 30px;
+    margin-bottom: 50px;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.jumbotron {
+    background-image: url('screenshot.jpg');
+    background-size: cover;
+    color: white;
+    padding: 100px 0;
+    margin-bottom: 30px;
+    border-radius: 5px;
+}
+
+/* Sections */
+
+section {
+    margin-bottom: 40px;
+}
+
+h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+ol,
+ul {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-left: 20px;
+}
+
+/* Footer */
+
+footer {
+    margin-top: 50px;
+    padding-top: 20px;
+    border-top: 1px solid #ccc;
+}
