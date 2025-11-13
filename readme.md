@@ -1,101 +1,92 @@
-```markdown
-# PDF FIT - PDF Size Reducer
+# 📄 pdf_fit — Smart PDF Optimizer
+**Tech & Stream** · Kevin Marville
 
-![Screenshot](screenshot.jpg "Screenshot")
+A clean, fast, UNIX-style CLI for compressing, resizing, and optimizing PDFs.
+Written in PHP, structured like Python, designed for multi-platform automation.
 
-PDF FIT is a user-friendly Python-based tool designed to compress PDF files efficiently, making them optimal for sharing on various platforms where file size matters, such as LinkedIn or other online platforms. This tool automates the process of reducing PDF sizes, ensuring they are optimized for online use.
+---
 
-![Merry Christmas](merry_christmas.jpg "Merry Christmas Feature")
+## 🔥 Features
 
-## Features
+- `pdf_fit smart file.pdf` → automatic optimization strategy
+- Compression with tunable quality / DPI controls
+- Resize presets for mobile or web deliverables
+- Detailed before/after summary with percentage gain and execution time
+- Modular architecture ready for Ghostscript, Imagick, and batch extensions
 
-- **Simple Interface:** A straightforward UI allows users to reduce PDF sizes with ease.
-- **Cross-platform:** Works on Windows, macOS, Linux, and more.
-- **Efficient Compression:** Compresses PDF files while maintaining quality.
+---
 
-## Installation and Usage
+## 🚀 Installation
 
-### Prerequisites
-
-Ensure you have Python installed on your system. If not, download and install Python from [Python's official website](https://www.python.org/downloads/).
-
-### Installation Steps
-
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/kvnbbg/pdf_fit.git
-   cd pdf_fit
-   ```
-
-2. **Install Dependencies:**
-
-   Install the required libraries using pip:
-
-   ```bash
-   pip install PyPDF2
-   ```
-
-3. **Run the Application:**
-
-   Run the script to execute the PDF size reduction tool:
-
-   ```bash
-   python pdf_size_reduce.py
-   ```
-
-4. **Follow On-Screen Instructions:**
-
-   - Click the "Reduce PDF Size" button.
-   - Select the PDF file to compress.
-   - Choose the location to save the reduced PDF.
-
-### Creating Standalone Executable (macOS, Windows, Linux)
-
-To create an executable app for your specific platform, follow these steps:
-
-1. **Create a Python script named `pdf_size_reduce.py` containing the code for the PDF size reduction tool.
-
-2. **Create a `setup.py` file with setup configurations for your platform-specific executable.
-
-3. **Run the setup file to create the executable:
-
-   For macOS (using `py2app`):
-
-   ```bash
-   python setup.py py2app
-   ```
-
-   For Windows (using `py2exe`) or Linux (using `PyInstaller`), adjust the setup file and use the corresponding command to create the executable.
-
-4. **Find the Generated App:**
-
-   Navigate to the `dist` folder and find the generated app or executable.
-
-## Credits
-
-This PDF size reduction tool is developed by [Kevin Marville](https://github.com/kvnbbg) and is distributed under the [MIT License](LICENSE).
-
-### pdf_size_reduce.py
-
-```python
-# The content of pdf_size_reduce.py script goes here
+```bash
+chmod +x bin/pdf_fit
 ```
 
-### setup.py
+Optional: add `pdf_fit/bin` to your `$PATH` or install via a global Composer package.
 
-```python
-# The content of setup.py script goes here
+Requirements:
+
+- PHP 8.1+
+- Ghostscript (`gs`) for native compression (falls back gracefully if missing)
+- `pdfinfo` (Poppler) for advanced analysis (optional)
+
+---
+
+## ⚙️ Usage
+
+```bash
+pdf_fit smart invoice.pdf
+pdf_fit compress report.pdf --quality=60 --dpi=144
+pdf_fit resize catalog.pdf --width=1080 --height=1920
 ```
 
-### install.py
+All CLI options support both `--key=value` and `--key value` formats.
 
-```python
-# The content of install.py script goes here
-```
+---
 
-For further details, explore the scripts provided in this repository.
+## 🧠 Architecture
 
 ```
+bin/
+  pdf_fit
+config/
+  defaults.php
+src/
+  Cli/ArgvParser.php
+  Logger.php
+  PdfAnalyzer.php
+  PdfExporter.php
+  PdfLoader.php
+  PdfProcessor.php
+  Pipeline.php
+  StrategySelector.php
+  Support/Stopwatch.php
+```
 
-Replace `[Kevin Marville](https://github.com/kvnbbg)` with your actual name and GitHub profile link. Additionally, ensure the sections about `pdf_size_reduce.py`, `setup.py`, and `install.py` contain the respective script content.
+Each component mirrors a Python-style pipeline:
+
+1. **PdfLoader** — loads binaries and metadata.
+2. **PdfAnalyzer** — inspects size/pages to guide the strategy.
+3. **StrategySelector** — chooses smart/manual/resize profiles.
+4. **PdfProcessor** — executes Ghostscript (if available) or stubs for future plugins.
+5. **PdfExporter** — writes stable filenames without overwriting.
+6. **Logger** — colorful feedback + summary reporting.
+7. **Pipeline** — orchestrates the full workflow.
+
+---
+
+## 🧪 Roadmap / Extensions
+
+- Plugin directory for extreme compression, thumbnails, or metadata extraction.
+- Batch mode to optimize entire folders.
+- HTTP API façade for integrations with Notion, Zapier, or SaaS dashboards.
+- GitHub Actions workflow to self-test compression strategies.
+- PHPUnit coverage for regression-proof refactors.
+
+PRs and ideas welcome — let’s keep pushing the Tech & Stream toolbelt.
+
+---
+
+## 📜 Licence
+
+MIT. Use, fork, and adapt for your automation stack.
