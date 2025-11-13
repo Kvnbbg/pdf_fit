@@ -36,16 +36,7 @@ final class Utils
             return $config;
         }
 
-        $configFile = __DIR__ . '/../../config.php';
-        if (file_exists($configFile)) {
-            $loaded = include $configFile;
-            if (is_array($loaded)) {
-                $config = $loaded;
-                return $config;
-            }
-        }
-
-        $config = [
+        $defaults = [
             'smart' => [
                 'huge'   => ['quality' => 30, 'dpi' => 120],
                 'large'  => ['quality' => 45, 'dpi' => 150],
@@ -59,6 +50,17 @@ final class Utils
                 'thumbnail_quality' => 85,
             ],
         ];
+
+        $configFile = __DIR__ . '/../../config.php';
+        if (file_exists($configFile)) {
+            $loaded = include $configFile;
+            if (is_array($loaded)) {
+                $config = array_replace_recursive($defaults, $loaded);
+                return $config;
+            }
+        }
+
+        $config = $defaults;
 
         return $config;
     }
