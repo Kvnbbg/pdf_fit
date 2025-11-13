@@ -44,6 +44,13 @@ final class Logger
         self::output('Strategy: ' . json_encode($result['strategy']));
         self::output('Duration: ' . sprintf('%.3fs', $result['duration']));
 
+        if (!empty($result['notes'])) {
+            self::headline('Processing Notes');
+            foreach ($result['notes'] as $note) {
+                self::output('- ' . $note);
+            }
+        }
+
         if (!empty($result['plugins'])) {
             self::headline('Plugin Outputs');
             foreach ($result['plugins'] as $name => $payload) {

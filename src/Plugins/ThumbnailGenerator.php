@@ -18,6 +18,7 @@ final class ThumbnailGenerator
         }
 
         $config = Utils::readConfig();
+        $quality = $config['plugins']['thumbnail_quality'] ?? 85;
         $pluginsConfig = $config['plugins'] ?? [];
         $quality = $pluginsConfig['thumbnail_quality'] ?? 85;
 

@@ -13,12 +13,40 @@ final class PdfProcessor
             'notes'    => [],
         ];
 
+        if (!Utils::commandExists('gs')) {
+            Logger::warn('Ghostscript not detected on PATH. Skipping PDF transformation.');
+            $context['notes'][] = 'Ghostscript unavailable; original file returned.';
         if (!$ghostscript) {
             $context['notes'][] = 'Ghostscript unavailable, returning original binary.';
             return $context;
         }
 
         $input = Utils::tempFile('.pdf');
+        $output = Utils::tempFile('.pdf');
+
+        file_put_contents($input, $pdf['binary']);
+
+        try {
+            $command = self::buildCommand($strategy['type'] ?? 'none', $input, $output, $strategy);
+            if ($command === null) {
+                $context['notes'][] = 'No transformation required for this strategy.';
+                copy($input, $output);
+            } else {
+                exec($command, $outputLines, $exitCode);
+                $processed = is_file($output) ? file_get_contents($output) : false;
+
+                if ($exitCode !== 0 || !is_string($processed) || $processed === '') {
+                    Logger::warn('Ghostscript command failed; falling back to original payload.');
+                    $context['notes'][] = 'Ghostscript command failed; original binary preserved.';
+                    copy($input, $output);
+                    $processed = $pdf['binary'];
+                } else {
+                    $context['notes'][] = 'Ghostscript pipeline executed successfully.';
+                }
+
+                $context['binary'] = is_string($processed) ? $processed : $pdf['binary'];
+            }
+
         file_put_contents($input, $pdf['binary']);
         $output = Utils::tempFile('.pdf');
 
@@ -55,6 +83,16 @@ final class PdfProcessor
             @unlink($input);
             @unlink($output);
         }
+    }
+
+    private static function buildCommand(string $type, string $input, string $output, array $strategy): ?string
+    {
+        return match ($type) {
+            'compress' => self::buildCompressCommand($input, $output, $strategy),
+            'resize'   => self::buildResizeCommand($input, $output, $strategy),
+            'extreme'  => self::buildExtremeCommand($input, $output),
+            default    => null,
+        };
     }
 
     private static function buildCompressCommand(string $input, string $output, array $strategy): string

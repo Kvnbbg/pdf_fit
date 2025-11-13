@@ -35,6 +35,7 @@ $payload = [
         'after'  => $result['sizeAfter'],
     ],
     'duration' => $result['duration'],
+    'notes'    => $result['notes'],
     'plugins'  => $result['plugins'],
 ];
 

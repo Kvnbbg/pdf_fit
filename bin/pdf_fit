@@ -1,6 +1,16 @@
 #!/usr/bin/env php
 <?php
 
+foreach ([
+    __DIR__ . '/../vendor/autoload.php',
+    __DIR__ . '/../../../autoload.php',
+    __DIR__ . '/../autoload.php',
+] as $autoload) {
+    if (file_exists($autoload)) {
+        require $autoload;
+        break;
+    }
+}
 declare(strict_types=1);
 
 require __DIR__ . '/../autoload.php';
@@ -28,6 +38,8 @@ switch ($command) {
             fwrite(STDERR, "Batch mode requires a directory.\n");
             exit(1);
         }
+        $mode = $options['mode'] ?? 'smart';
+        unset($options['mode']);
 
         $mode = $options['mode'] ?? 'smart';
         unset($options['mode']);

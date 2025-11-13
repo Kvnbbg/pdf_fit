@@ -31,6 +31,7 @@ final class Pipeline
 
         Logger::info('⚙️  Processing via Ghostscript');
         $processed = PdfProcessor::process($pdf, $strategy);
+        $processingNotes = $processed['notes'] ?? [];
 
         Logger::info('📦 Exporting artifact');
         $output = PdfExporter::export($processed, $this->file, $strategy);
@@ -47,6 +48,7 @@ final class Pipeline
             'strategy'    => $strategy,
             'sizeBefore'  => $sizeBefore,
             'sizeAfter'   => $sizeAfter,
+            'notes'       => $processingNotes,
         ];
 
         Logger::info('🔌 Running plugins');
@@ -62,6 +64,7 @@ final class Pipeline
             'sizeBefore' => $sizeBefore,
             'sizeAfter'  => $sizeAfter,
             'duration'   => $duration,
+            'notes'      => $processingNotes,
             'plugins'    => $plugins,
         ];
     }

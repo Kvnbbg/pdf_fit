@@ -52,6 +52,7 @@ pdf_fit batch ./statements --mode=smart
 pdf_fit server --host=0.0.0.0 --port=8080
 ```
 
+The CLI prints a quantum-style summary: input/output, before/after size, gain %, strategy JSON, runtime, processing notes, and plugin payloads.
 The CLI prints a quantum-style summary: input/output, before/after size, gain %, strategy JSON, runtime, and plugin payloads.
 
 ---
@@ -106,6 +107,43 @@ Register your own plugin by calling `PluginManager::register('name', fn($context
 php bin/pdf_fit server --port=8080
 # POST a PDF to http://localhost:8080 with multipart/form-data
 ```
+
+`public/index.php` accepts:
+
+- `pdf`: uploaded file
+- `mode`: `smart|compress|optimize|extreme|resize`
+- Extra fields become pipeline options (e.g., `quality`, `dpi`, `width`, `height`).
+
+Response payload mirrors the CLI summary, perfect for Zapier, Notion, or SaaS control panels.
+
+---
+
+## 🧪 Quality gates
+
+- PHPUnit suite (`tests/`) with analyzer, strategy, and processor coverage.
+- GitHub Actions workflow (`.github/workflows/ci.yml`) for automated testing.
+- Configurable smart profiles via `config.php`.
+
+Run locally:
+
+```bash
+./vendor/bin/phpunit
+```
+
+---
+
+## 🛣 Roadmap
+
+- GPU-accelerated compression via Dockerized Ghostscript builds.
+- Queue-based batch ingestion (Redis + Supervisor).
+- Frontend dashboard with progressive previews.
+- Plugin marketplace for Tech & Stream automation clients.
+
+---
+
+## 📜 Licence
+
+MIT — shipped with ❤️ by Tech & Stream. Use it, fork it, improve it.
 
 `public/index.php` accepts:
 
