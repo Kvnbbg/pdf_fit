@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/src/AgentFreelance.php';
+
+const CONFIG_FILE = __DIR__ . '/job.json';
+
 /**
  * Agent Freelance CLI (PHP)
  * --------------------------------------------------------------
@@ -423,6 +427,11 @@ function render_profile(array $freelancer): void
     echo PHP_EOL;
 }
 
+function render_platform_catalog(array $catalog, array $topPlatforms): void
+{
+    echo "=== PLATEFORMES FREELANCE ===\n";
+
+    foreach ($catalog as $type => $platforms) {
 function render_platform_catalog(array $freelancer): void
 {
     echo "=== PLATEFORMES FREELANCE ===\n";
@@ -441,6 +450,9 @@ function render_platform_catalog(array $freelancer): void
         echo PHP_EOL;
     }
 
+    if (!empty($topPlatforms)) {
+        echo "Top 5 focus :\n";
+        foreach ($topPlatforms as $index => $platformName) {
     if (!empty($freelancer['top_platforms'])) {
         echo "Top 5 focus :\n";
         foreach ($freelancer['top_platforms'] as $index => $platformName) {
@@ -450,6 +462,38 @@ function render_platform_catalog(array $freelancer): void
     }
 }
 
+function render_routines(array $routines): void
+{
+    echo "=== ROUTINE CLIENTS ===\n";
+    echo $routines['daily']['title'] . ":\n";
+    foreach ($routines['daily']['steps'] as $step) {
+        printf("  - %s\n", $step);
+    }
+    echo PHP_EOL;
+
+    echo $routines['boost']['title'] . ":\n";
+    foreach ($routines['boost']['days'] as $day) {
+        printf("  %s :\n", $day['label']);
+        foreach ($day['actions'] as $action) {
+            printf("    • %s\n", $action);
+        }
+    }
+    echo PHP_EOL;
+}
+
+function render_comparative_table(array $rows): void
+{
+    echo "=== TABLEAU COMPARATIF ===\n";
+    printf(
+        "%-22s | %-9s | %-15s | %-8s | %-11s | %-22s | %s\n",
+        'Plateforme',
+        'Difficulté',
+        'Gains potentiels',
+        'Rapidité',
+        'Compétition',
+        'Idéal pour',
+        'Notes'
+    );
 function render_routines(): void
 {
     echo "=== ROUTINE CLIENTS ===\n";
@@ -485,6 +529,13 @@ function render_comparative_table(): void
     foreach ($rows as $row) {
         printf(
             "%-22s | %-9s | %-15s | %-8s | %-11s | %-22s | %s\n",
+            $row['platform'],
+            $row['difficulty'],
+            $row['earnings'],
+            $row['speed'],
+            $row['competition'],
+            $row['ideal_for'],
+            $row['notes']
             ...$row
         );
     }
@@ -492,6 +543,25 @@ function render_comparative_table(): void
     echo PHP_EOL;
 }
 
+function render_job(array $report, int $index): void
+{
+    $job = $report['job'];
+    $analysis = $report['analysis'];
+    $strategy = $report['strategy'];
+
+    printf("=== MISSION #%d — %s ===\n", $index + 1, $job['platform']);
+
+    echo "Analyse rapide :\n";
+    printf("  • Objectif : %s\n", $analysis['goal']);
+    printf(
+        "  • Techno : %s\n",
+        $analysis['technologies'] ? implode(', ', $analysis['technologies']) : 'à préciser'
+    );
+    printf("  • Deadline : %s\n", $analysis['deadline']);
+    printf(
+        "  • Budget : %s\n",
+        $analysis['budget'] !== null ? $analysis['budget'] . ' €' : 'Non communiqué'
+    );
 // -----------------------------------------------------------------------------
 // Job rendering pipeline
 // -----------------------------------------------------------------------------
@@ -514,6 +584,30 @@ function render_job(array $job, array $freelancer, int $index): void
 
     echo PHP_EOL;
     echo "Stratégie :\n";
+    printf("  Grade : %s (score %d)\n", $strategy['grade'], $strategy['score']);
+    printf("  Commentaire : %s\n\n", $strategy['explanation']);
+
+    echo "Pitch :\n";
+    echo $report['pitch'] . PHP_EOL . PHP_EOL;
+}
+
+if (PHP_SAPI === 'cli' && basename(__FILE__) === basename($_SERVER['argv'][0] ?? '')) {
+    try {
+        $agent = new AgentFreelance(CONFIG_FILE);
+
+        $freelancer = $agent->getFreelancer();
+        $platformCatalog = $agent->getPlatformCatalog();
+        $routines = $agent->getRoutines();
+        $comparativeTable = $agent->getComparativeTable();
+        $reports = $agent->buildAllReports();
+
+        render_profile($freelancer);
+        render_platform_catalog($platformCatalog, $freelancer['top_platforms'] ?? []);
+        render_routines($routines);
+        render_comparative_table($comparativeTable);
+
+        foreach ($reports as $index => $report) {
+            render_job($report, $index);
     printf("  Grade : %s (score %d)\n", $evaluation['grade'], $evaluation['score']);
     printf("  Commentaire : %s\n\n", $evaluation['explanation']);
 
