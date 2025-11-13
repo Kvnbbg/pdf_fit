@@ -1,0 +1,52 @@
+{
+  "freelancer": {
+    "name": "Kevin MARVILLE",
+    "brand": "Tech & Stream",
+    "site_main": "https://kvnbbg.fr",
+    "site_brand": "https://techandstream.com",
+    "tagline_fr": "Développeur full-stack, contenu & automation. Résultat, clarté, impact.",
+    "tagline_en": "Full-stack engineer + content creator. Fast delivery, clear comms.",
+    "years_experience": 8,
+    "top_platforms": ["Malt", "Upwork", "Fiverr", "FreelanceRepublik", "Codeur"],
+    "social_links": {
+      "linkedin": "https://linkedin.com/in/kevin-marville",
+      "instagram": "https://instagram.com/techandstream",
+      "youtube": "https://www.youtube.com/@techandstream",
+      "twitch": "https://www.twitch.tv/techandstream"
+    },
+    "content_pillars": [
+      "build in public & indie hacking",
+      "automation for solopreneurs",
+      "live coding streams & tutorials"
+    ]
+  },
+  "jobs": [
+    {
+      "platform": "Codeur.com",
+      "language": "fr",
+      "text": "Bonjour, nous avons besoin d'un développeur pour refondre notre site vitrine WordPress avec intégration d'une page SEO optimisée et d'un module de prise de rendez-vous. Budget autour de 1 200€ et livraison souhaitée avant fin du mois.",
+      "constraints": {
+        "min_budget": 800,
+        "min_deadline_days": 10
+      }
+    },
+    {
+      "platform": "Upwork",
+      "language": "en",
+      "text": "We're looking for a bilingual full-stack dev to build a lightweight dashboard pulling analytics from Notion and Google Analytics via APIs. Ideally ship an MVP within 3 weeks. Budget range $2,000 - $2,500.",
+      "constraints": {
+        "min_budget": 1800,
+        "min_deadline_days": 14
+      }
+    },
+    {
+      "platform": "Fiverr",
+      "language": "en",
+      "text": "Need a fast automation expert to create a Zapier + Make scenario that syncs newsletter leads into Airtable, enriches them with Clearbit and triggers a personalized welcome email. Looking to start ASAP, budget $350.",
+      "constraints": {
+        "min_budget": 300,
+        "min_deadline_days": 3
+      }
+    }
+  ]
+}
