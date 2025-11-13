@@ -19,6 +19,8 @@ final class ThumbnailGenerator
 
         $config = Utils::readConfig();
         $quality = $config['plugins']['thumbnail_quality'] ?? 85;
+        $pluginsConfig = $config['plugins'] ?? [];
+        $quality = $pluginsConfig['thumbnail_quality'] ?? 85;
 
         $command = sprintf(
             'gs -dNOPAUSE -dBATCH -sDEVICE=jpeg -dJPEGQ=%d -dLastPage=1 -sOutputFile=%s %s 2>/dev/null',

@@ -1,19 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PdfFit\Cli;
 
 use InvalidArgumentException;
 
 final class ArgvParser
 {
-class ArgvParser
-{
-    private const SUPPORTED_MODES = ['smart', 'compress', 'resize'];
-
     public function parse(array $argv): array
     {
         $args = $argv;
         array_shift($args); // remove script name
+        array_shift($args);
+
         if (empty($args)) {
             throw new InvalidArgumentException($this->usage());
         }
@@ -28,6 +28,7 @@ class ArgvParser
     private function extractOptions(array $args): array
     {
         $params = [];
+        $options = [];
         $target = null;
 
         while (!empty($args)) {
@@ -45,6 +46,61 @@ class ArgvParser
         }
 
         return ['__target' => $target, 'params' => $params];
+
+            if (str_starts_with($arg, '--')) {
+                $options = $this->storeOption($options, $arg, $args);
+            } elseif ($target === null) {
+                $target = $arg;
+            } else {
+                $options[] = $arg;
+            }
+        }
+
+        return [$command, $target, $options];
+    }
+
+    private function storeOption(array $options, string $arg, array &$args): array
+    {
+        [$key, $value] = $this->splitOption($arg, $args);
+        $options[$key] = $value;
+
+        return $options;
+    }
+
+    private function splitOption(string $arg, array &$args): array
+    {
+        $trimmed = substr($arg, 2);
+
+        if (str_contains($trimmed, '=')) {
+            [$key, $value] = explode('=', $trimmed, 2);
+            return [$key, $this->normalizeValue($value)];
+        }
+
+        $key = $trimmed;
+        if (!empty($args) && !str_starts_with($args[0], '--')) {
+            $value = array_shift($args);
+            return [$key, $this->normalizeValue($value)];
+        }
+
+        return [$key, true];
+    }
+
+    private function normalizeValue(string $value): mixed
+    {
+        if (is_numeric($value)) {
+            return $value + 0;
+        }
+
+        $lower = strtolower($value);
+        if ($lower === 'true') {
+            return true;
+        }
+
+        if ($lower === 'false') {
+            return false;
+        }
+
+        return $value;
     }
 
     private function usage(): string
@@ -57,86 +113,6 @@ Commands:
   resize <file.pdf> --width=1080 --height=1920
   batch <directory> [--mode=smart]
   server [--host=0.0.0.0 --port=8080]
-
-        if (empty($args)) {
-            throw new InvalidArgumentException($this->usage("Missing arguments"));
-        }
-
-        $mode = strtolower(array_shift($args));
-        if (!in_array($mode, self::SUPPORTED_MODES, true)) {
-            throw new InvalidArgumentException($this->usage("Unsupported mode '{$mode}'"));
-        }
-
-        $file = array_shift($args);
-        if ($file === null) {
-            throw new InvalidArgumentException($this->usage("PDF file path is required"));
-        }
-
-        if (!is_file($file)) {
-            throw new InvalidArgumentException("File not found: {$file}");
-        }
-
-        $options = $this->parseOptions($args);
-
-        return [$mode, $file, $options];
-    }
-
-    private function parseOptions(array $args): array
-    {
-        $options = [];
-        $pendingKey = null;
-
-        foreach ($args as $arg) {
-            if (str_starts_with($arg, '--')) {
-                $trimmed = substr($arg, 2);
-                if (str_contains($trimmed, '=')) {
-                    [$key, $value] = explode('=', $trimmed, 2);
-                    $options[$key] = $this->normalizeValue($value);
-                } else {
-                    $pendingKey = $trimmed;
-                }
-            } elseif ($pendingKey !== null) {
-                $options[$pendingKey] = $this->normalizeValue($arg);
-                $pendingKey = null;
-            } else {
-                $options[] = $arg;
-            }
-        }
-
-        if ($pendingKey !== null) {
-            $options[$pendingKey] = true;
-        }
-
-        return $options;
-    }
-
-    private function normalizeValue(string $value): mixed
-    {
-        if (is_numeric($value)) {
-            return $value + 0;
-        }
-
-        $lower = strtolower($value);
-        if (in_array($lower, ['true', 'false'], true)) {
-            return $lower === 'true';
-        }
-
-        return $value;
-    }
-
-    private function usage(string $error): string
-    {
-        $modes = implode(', ', self::SUPPORTED_MODES);
-
-        return <<<TXT
-{$error}
-Usage: pdf_fit <mode> <file.pdf> [options]
-
-Modes: {$modes}
-Examples:
-  pdf_fit smart invoice.pdf
-  pdf_fit compress report.pdf --quality=60
-  pdf_fit resize slides.pdf --width=1080 --height=1920
 TXT;
     }
 }

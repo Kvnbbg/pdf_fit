@@ -46,6 +46,7 @@ final class Utils
         }
 
         $config = [
+        $defaults = [
             'smart' => [
                 'huge'   => ['quality' => 30, 'dpi' => 120],
                 'large'  => ['quality' => 45, 'dpi' => 150],
@@ -55,7 +56,21 @@ final class Utils
             'paths' => [
                 'output_suffix' => 'pdf_fit',
             ],
+            'plugins' => [
+                'thumbnail_quality' => 85,
+            ],
         ];
+
+        $configFile = __DIR__ . '/../../config.php';
+        if (file_exists($configFile)) {
+            $loaded = include $configFile;
+            if (is_array($loaded)) {
+                $config = array_replace_recursive($defaults, $loaded);
+                return $config;
+            }
+        }
+
+        $config = $defaults;
 
         return $config;
     }
