@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../autoload.php';
+
+use PdfFit\Cli\ArgvParser;
+use PdfFit\Logger;
+use PdfFit\Pipeline;
+
+$parser = new ArgvParser();
+try {
+    [$mode, $file, $options] = $parser->parse($argv);
+} catch (InvalidArgumentException $exception) {
+    fwrite(STDERR, $exception->getMessage() . "\n");
+    exit(1);
+}
+
+$pipeline = new Pipeline($mode, $file, $options);
+$result = $pipeline->run();
+
+Logger::printSummary($result);
