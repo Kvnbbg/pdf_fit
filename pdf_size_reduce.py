@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
-import PyPDF2
+from PyPDF2 import PdfReader, PdfWriter
+from PyPDF2.errors import PdfReadError
 import traceback
 import os
 
@@ -27,13 +28,12 @@ def reduce_pdf_size():
             return
 
         with open(input_file_path, 'rb') as file:
-            pdf_reader = PyPDF2.PdfReader(file)
-            pdf_writer = PyPDF2.PdfWriter()
+            pdf_reader = PdfReader(file)
+            pdf_writer = PdfWriter()
 
-            for page_num in range(pdf_reader.numPages):
-                page = pdf_reader.getPage(page_num)
-                page.compressContentStreams()
-                pdf_writer.addPage(page)
+            for page in pdf_reader.pages:
+                page.compress_content_streams()
+                pdf_writer.add_page(page)
 
             # Save the reduced PDF
             with open(output_file_path, 'wb') as output_file:
@@ -51,7 +51,7 @@ def reduce_pdf_size():
                         text="The reduced PDF is still larger than 2MB. Consider other compression methods."
                     )
 
-    except PyPDF2.utils.PdfReadError:
+    except PdfReadError:
         result_label.config(text="Error: Invalid or corrupted PDF file.")
     except Exception as e:
         result_label.config(text="An error occurred during processing.")
