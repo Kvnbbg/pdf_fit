@@ -1,6 +1,8 @@
 #!/usr/bin/env php
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/../autoload.php';
 
 use PdfFit\Api\Server;
@@ -14,14 +16,6 @@ $parser = new ArgvParser();
 try {
     [$command, $target, $options] = $parser->parse($argv);
 } catch (\InvalidArgumentException $exception) {
-use PdfFit\Cli\ArgvParser;
-use PdfFit\Logger;
-use PdfFit\Pipeline;
-
-$parser = new ArgvParser();
-try {
-    [$mode, $file, $options] = $parser->parse($argv);
-} catch (InvalidArgumentException $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);
 }
@@ -34,8 +28,10 @@ switch ($command) {
             fwrite(STDERR, "Batch mode requires a directory.\n");
             exit(1);
         }
+
         $mode = $options['mode'] ?? 'smart';
         unset($options['mode']);
+
         $results = BatchProcessor::runDirectory($target, $mode, $options);
         Logger::printBatchSummary($results);
         exit(0);
@@ -44,6 +40,7 @@ switch ($command) {
         $host = $options['host'] ?? '0.0.0.0';
         $port = (int) ($options['port'] ?? 8080);
         $docRoot = $target;
+
         Server::run($host, $port, $docRoot);
         exit(0);
 
@@ -52,12 +49,9 @@ switch ($command) {
             fwrite(STDERR, "Command {$command} requires a target file.\n");
             exit(1);
         }
+
         $pipeline = new Pipeline($command, $target, $options);
         $result = $pipeline->run();
         Logger::printSummary($result);
         exit(0);
 }
-$pipeline = new Pipeline($mode, $file, $options);
-$result = $pipeline->run();
-
-Logger::printSummary($result);
