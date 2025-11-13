@@ -55,6 +55,9 @@ final class Utils
             'paths' => [
                 'output_suffix' => 'pdf_fit',
             ],
+            'plugins' => [
+                'thumbnail_quality' => 85,
+            ],
         ];
 
         return $config;
