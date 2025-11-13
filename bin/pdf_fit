@@ -11,6 +11,7 @@ foreach ([
         break;
     }
 }
+require __DIR__ . '/../autoload.php';
 
 use PdfFit\Api\Server;
 use PdfFit\Batch\BatchProcessor;
@@ -23,6 +24,14 @@ $parser = new ArgvParser();
 try {
     [$command, $target, $options] = $parser->parse($argv);
 } catch (\InvalidArgumentException $exception) {
+use PdfFit\Cli\ArgvParser;
+use PdfFit\Logger;
+use PdfFit\Pipeline;
+
+$parser = new ArgvParser();
+try {
+    [$mode, $file, $options] = $parser->parse($argv);
+} catch (InvalidArgumentException $exception) {
     fwrite(STDERR, $exception->getMessage() . "\n");
     exit(1);
 }
@@ -58,3 +67,7 @@ switch ($command) {
         Logger::printSummary($result);
         exit(0);
 }
+$pipeline = new Pipeline($mode, $file, $options);
+$result = $pipeline->run();
+
+Logger::printSummary($result);
