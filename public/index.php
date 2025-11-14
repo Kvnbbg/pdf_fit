@@ -23,7 +23,17 @@ $options = $_POST;
 unset($options['mode']);
 
 $pipeline = new Pipeline($mode, $_FILES['pdf']['tmp_name'], $options);
+$logBufferStarted = ob_start();
 $result = $pipeline->run();
+$logOutput = $logBufferStarted ? ob_get_clean() : '';
+
+if ($logOutput !== '' && $logOutput !== false) {
+    foreach (preg_split("/(?:\r?\n)+/", trim($logOutput)) as $line) {
+        if ($line !== '') {
+            error_log($line);
+        }
+    }
+}
 
 $payload = [
     'input'    => $result['input'],
