@@ -36,16 +36,6 @@ final class Utils
             return $config;
         }
 
-        $configFile = __DIR__ . '/../../config.php';
-        if (file_exists($configFile)) {
-            $loaded = include $configFile;
-            if (is_array($loaded)) {
-                $config = $loaded;
-                return $config;
-            }
-        }
-
-        $config = [
         $defaults = [
             'smart' => [
                 'huge'   => ['quality' => 30, 'dpi' => 120],
