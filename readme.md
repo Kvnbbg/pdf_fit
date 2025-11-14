@@ -1,101 +1,165 @@
-```markdown
-# PDF FIT - PDF Size Reducer
+# 📄 pdf_fit v3 — Quantum-grade PDF optimization
 
-![Screenshot](screenshot.jpg "Screenshot")
+**Tech & Stream** · Kevin Marville
 
-PDF FIT is a user-friendly Python-based tool designed to compress PDF files efficiently, making them optimal for sharing on various platforms where file size matters, such as LinkedIn or other online platforms. This tool automates the process of reducing PDF sizes, ensuring they are optimized for online use.
+A production-ready toolkit for compressing, resizing, and orchestrating PDF workflows. Built in PHP, structured like Python, branded for the Tech & Stream ecosystem.
 
-![Merry Christmas](merry_christmas.jpg "Merry Christmas Feature")
+---
 
-## Features
+## ✨ Highlights
 
-- **Simple Interface:** A straightforward UI allows users to reduce PDF sizes with ease.
-- **Cross-platform:** Works on Windows, macOS, Linux, and more.
-- **Efficient Compression:** Compresses PDF files while maintaining quality.
+- **Smart CLI** — `pdf_fit smart file.pdf` auto-selects the best Ghostscript strategy.
+- **Extreme modes** — `compress`, `optimize`, `extreme`, `resize`, and **batch** directory processing.
+- **Plugin ecosystem** — metadata extraction, thumbnail generation, quality suggestions.
+- **REST API** — ship as a microservice with `pdf_fit server` or deploy `public/index.php`.
+- **Logging & telemetry** — before/after stats, plugin reports, execution timing.
+- **Job Application Toolkit** — `job_apply` analyses job posts and outputs a Kevin-specific 10-step plan.
+- **CI-ready** — PHPUnit coverage + GitHub Actions.
+- **Composer global tool** — `composer global require techandstream/pdf_fit` (after publishing).
 
-## Installation and Usage
+---
 
-### Prerequisites
+## 🚀 Quick start
 
-Ensure you have Python installed on your system. If not, download and install Python from [Python's official website](https://www.python.org/downloads/).
-
-### Installation Steps
-
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/kvnbbg/pdf_fit.git
-   cd pdf_fit
-   ```
-
-2. **Install Dependencies:**
-
-   Install the required libraries using pip:
-
-   ```bash
-   pip install PyPDF2
-   ```
-
-3. **Run the Application:**
-
-   Run the script to execute the PDF size reduction tool:
-
-   ```bash
-   python pdf_size_reduce.py
-   ```
-
-4. **Follow On-Screen Instructions:**
-
-   - Click the "Reduce PDF Size" button.
-   - Select the PDF file to compress.
-   - Choose the location to save the reduced PDF.
-
-### Creating Standalone Executable (macOS, Windows, Linux)
-
-To create an executable app for your specific platform, follow these steps:
-
-1. **Create a Python script named `pdf_size_reduce.py` containing the code for the PDF size reduction tool.
-
-2. **Create a `setup.py` file with setup configurations for your platform-specific executable.
-
-3. **Run the setup file to create the executable:
-
-   For macOS (using `py2app`):
-
-   ```bash
-   python setup.py py2app
-   ```
-
-   For Windows (using `py2exe`) or Linux (using `PyInstaller`), adjust the setup file and use the corresponding command to create the executable.
-
-4. **Find the Generated App:**
-
-   Navigate to the `dist` folder and find the generated app or executable.
-
-## Credits
-
-This PDF size reduction tool is developed by [Kevin Marville](https://github.com/kvnbbg) and is distributed under the [MIT License](LICENSE).
-
-### pdf_size_reduce.py
-
-```python
-# The content of pdf_size_reduce.py script goes here
+```bash
+composer install
+chmod +x bin/pdf_fit
+php bin/pdf_fit smart tests/Fixtures/example.pdf
 ```
 
-### setup.py
+Install globally once released:
 
-```python
-# The content of setup.py script goes here
+```bash
+composer global require techandstream/pdf_fit
+pdf_fit smart doc.pdf
 ```
 
-### install.py
+Requirements:
 
-```python
-# The content of install.py script goes here
+- PHP 8.1+
+- Ghostscript (`gs`) for compression + thumbnail plugins
+- `pdfinfo` (Poppler) for metadata enrichment (optional)
+
+---
+
+## 🧠 CLI commands
+
+```bash
+pdf_fit smart invoice.pdf
+pdf_fit compress report.pdf --quality=55 --dpi=150
+pdf_fit resize brochure.pdf --width=1080 --height=1920
+pdf_fit extreme archive.pdf
+pdf_fit batch ./statements --mode=smart
+pdf_fit server --host=0.0.0.0 --port=8080
+job_apply mission.txt --json
 ```
 
-For further details, explore the scripts provided in this repository.
+The CLI prints a quantum-style summary: input/output, before/after size, gain %, strategy JSON, runtime, processing notes, and plugin payloads.
+
+---
+
+## 🏗 Architecture
 
 ```
+src/
+  Core/
+    Pipeline.php
+    PdfLoader.php
+    PdfAnalyzer.php
+    StrategySelector.php
+    PdfProcessor.php
+    PdfExporter.php
+    Logger.php
+    Utils.php
+    Stopwatch.php
+  Plugins/
+    CompressExtreme.php
+    HighQuality.php
+    MetadataExtractor.php
+    ThumbnailGenerator.php
+    PluginManager.php
+  Batch/BatchProcessor.php
+  Api/Server.php
+bin/pdf_fit
+public/index.php
+config.php
+```
 
-Replace `[Kevin Marville](https://github.com/kvnbbg)` with your actual name and GitHub profile link. Additionally, ensure the sections about `pdf_size_reduce.py`, `setup.py`, and `install.py` contain the respective script content.
+Everything is modular: the CLI, API, plugins, and batch processor all call the same Pipeline orchestrator.
+
+---
+
+## 🔌 Plugin matrix
+
+| Plugin | Purpose | Output |
+| ------ | ------- | ------ |
+| `compress_extreme` | Suggests extreme follow-up when the PDF remains heavy | CLI summary & JSON |
+| `high_quality` | Flags dense imagery to nudge optimize mode | CLI summary |
+| `metadata` | Extracts Poppler metadata and size metrics | CLI + API |
+| `thumbnail` | Generates a JPEG preview of page 1 | File path |
+
+Register your own plugin by calling `PluginManager::register('name', fn($context) => [...])` before `Pipeline::run()`.
+
+---
+
+## 🧰 Job Application Toolkit
+
+`job_apply` turns any job description into a rapid intelligence brief for Kevin Marville (Tech & Stream):
+
+```bash
+php bin/job_apply job_post.txt
+```
+
+What you get:
+
+- A summary of the role, company, tech keywords, culture cues, budget and deadlines.
+- A 10-step roadmap derived from the "10 Things You MUST Do Before Applying For a Job" video, but rewritten for the Tech & Stream positioning (web + IoT + content).
+- Optional JSON output with `--json` for automations (Notion, Obsidian, custom CRM).
+
+See [`docs/job_application_roadmap.md`](docs/job_application_roadmap.md) for the full checklist that powers the agent.
+
+---
+
+## 🌐 REST API
+
+```bash
+php bin/pdf_fit server --port=8080
+# POST a PDF to http://localhost:8080 with multipart/form-data
+```
+
+`public/index.php` accepts:
+
+- `pdf`: uploaded file
+- `mode`: `smart|compress|optimize|extreme|resize`
+- Extra fields become pipeline options (e.g., `quality`, `dpi`, `width`, `height`).
+
+Response payload mirrors the CLI summary, perfect for Zapier, Notion, or SaaS control panels.
+
+---
+
+## 🧪 Quality gates
+
+- PHPUnit suite (`tests/`) with analyzer, strategy, and processor coverage.
+- GitHub Actions workflow (`.github/workflows/ci.yml`) for automated testing.
+- Configurable smart profiles via `config.php`.
+
+Run locally:
+
+```bash
+./vendor/bin/phpunit
+```
+
+---
+
+## 🛣 Roadmap
+
+- GPU-accelerated compression via Dockerized Ghostscript builds.
+- Queue-based batch ingestion (Redis + Supervisor).
+- Frontend dashboard with progressive previews.
+- Plugin marketplace for Tech & Stream automation clients.
+
+---
+
+## 📜 Licence
+
+MIT — shipped with ❤️ by Tech & Stream. Use it, fork it, improve it.
