@@ -25,9 +25,46 @@ unset($options['mode']);
 $pipeline = new Pipeline($mode, $_FILES['pdf']['tmp_name'], $options);
 $result = $pipeline->run();
 
+$outputFile = $result['output'];
+$publishDir = __DIR__ . '/downloads';
+if (!is_dir($publishDir) && !mkdir($publishDir, 0775, true) && !is_dir($publishDir)) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Unable to prepare download directory']);
+    return;
+}
+
+$originalName = $_FILES['pdf']['name'] ?? 'document.pdf';
+$baseName = pathinfo($originalName, PATHINFO_FILENAME) ?: 'document';
+$baseName = preg_replace('/[^A-Za-z0-9_\-]+/', '-', $baseName);
+if ($baseName === '') {
+    $baseName = 'document';
+}
+
+try {
+    $token = bin2hex(random_bytes(4));
+} catch (\Throwable $exception) {
+    $token = (string) time();
+}
+
+$filename = sprintf('%s-%s.pdf', $baseName, $token);
+$publicPath = $publishDir . '/' . $filename;
+
+if (!@rename($outputFile, $publicPath)) {
+    if (!@copy($outputFile, $publicPath)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Unable to publish optimized PDF']);
+        return;
+    }
+    @unlink($outputFile);
+}
+
+@unlink($_FILES['pdf']['tmp_name']);
+
+$downloadUrl = '/downloads/' . $filename;
+
 $payload = [
     'input'    => $result['input'],
-    'output'   => $result['output'],
+    'output'   => $publicPath,
     'analysis' => $result['analysis'],
     'strategy' => $result['strategy'],
     'size'     => [
@@ -37,10 +74,12 @@ $payload = [
     'duration' => $result['duration'],
     'notes'    => $result['notes'],
     'plugins'  => $result['plugins'],
+    'download' => $downloadUrl,
+    'filename' => $filename,
 ];
 
 echo json_encode($payload, JSON_PRETTY_PRINT);
-declare(strict_types=1);
+return;
 
 require_once dirname(__DIR__) . '/src/AgentFreelance.php';
 
