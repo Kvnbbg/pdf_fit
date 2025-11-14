@@ -66,12 +66,61 @@ class PdfProcessor
 
     private static function resize(array $pdf, array $strategy): array
     {
-        $notes = [
-            'Resize mode requested but not implemented. Returning original binary.',
-            'Integrate imagick/ghostscript pipeline for full support.',
+        $ghostscript = self::ghostscriptBinary();
+        if ($ghostscript === null) {
+            throw new \RuntimeException('Resize mode requires Ghostscript to be installed.');
+        }
+
+        $width = max(320, (int) ($strategy['width'] ?? 1080));
+        $height = max(320, (int) ($strategy['height'] ?? 1920));
+        $fit = strtolower((string) ($strategy['fit'] ?? 'contain'));
+
+        $input = self::writeTempFile($pdf['binary'], '.pdf');
+        $output = tempnam(sys_get_temp_dir(), 'pdf_fit_');
+
+        $command = [
+            escapeshellcmd($ghostscript),
+            '-sDEVICE=pdfwrite',
+            '-dCompatibilityLevel=1.4',
+            '-dNOPAUSE',
+            '-dQUIET',
+            '-dBATCH',
+            '-dFIXEDMEDIA',
+            '-dDEVICEWIDTHPOINTS=' . $width,
+            '-dDEVICEHEIGHTPOINTS=' . $height,
         ];
 
-        return ['binary' => $pdf['binary'], 'notes' => $notes];
+        if ($fit === 'contain') {
+            $command[] = '-dPDFFitPage';
+        }
+
+        $command[] = '-sOutputFile=' . escapeshellarg($output);
+        $command[] = escapeshellarg($input);
+
+        $shell = shell_exec(implode(' ', $command) . ' 2>&1');
+
+        @unlink($input);
+
+        if (!is_string($shell)) {
+            @unlink($output);
+            throw new \RuntimeException('Ghostscript failed to execute resize command.');
+        }
+
+        $resized = @file_get_contents($output);
+        @unlink($output);
+
+        if ($resized === false || $resized === '') {
+            throw new \RuntimeException('Ghostscript resize produced an empty result.');
+        }
+
+        $notes = [
+            sprintf('Pages resized to %dx%d points using Ghostscript.', $width, $height),
+            $fit === 'contain'
+                ? 'Scaled to fit within target dimensions while preserving aspect ratio.'
+                : 'Scaled to target dimensions with fixed media box.',
+        ];
+
+        return ['binary' => $resized, 'notes' => $notes];
     }
 
     private static function ghostscriptBinary(): ?string
