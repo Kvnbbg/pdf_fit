@@ -72,7 +72,10 @@ $data = $agent->export();
     </footer>
 
     <script>
-        window.AGENT_DATA = <?= json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) ?>;
+        window.AGENT_DATA = <?= json_encode(
+            $data,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_HEX_TAG
+        ) ?>;
     </script>
     <script src="assets/app.js" defer></script>
 </body>
