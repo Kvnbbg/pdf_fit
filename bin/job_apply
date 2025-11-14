@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use PdfFit\JobAgent\JobApplicationAgent;
+
+$options = $argv;
+array_shift($options);
+
+if (empty($options)) {
+    fwrite(STDERR, "Usage: job_apply <job-description.txt> [--json]\n");
+    exit(1);
+}
+
+$file = $options[0];
+$json = in_array('--json', $options, true);
+
+if (!is_file($file)) {
+    fwrite(STDERR, "Error: cannot read job description file {$file}\n");
+    exit(1);
+}
+
+$text = file_get_contents($file);
+$agent = new JobApplicationAgent();
+$analysis = $agent->analyse($text);
+$roadmap = $agent->generateRoadmap($analysis);
+
+if ($json) {
+    echo json_encode([
+        'analysis' => $analysis,
+        'roadmap'  => $roadmap,
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . PHP_EOL;
+    exit(0);
+}
+
+echo "🧠 Job Application Intelligence\n";
+echo "===============================\n";
+echo "Role: " . ($analysis['role'] ?? 'N/A') . PHP_EOL;
+echo "Company: " . ($analysis['company'] ?? 'N/A') . PHP_EOL;
+echo "Technologies: " . (empty($analysis['technos']) ? 'N/A' : implode(', ', $analysis['technos'])) . PHP_EOL;
+echo "Culture cues: " . (empty($analysis['culture']) ? 'N/A' : implode(', ', $analysis['culture'])) . PHP_EOL;
+echo "Budget: " . ($analysis['budget'] ?? 'N/A') . PHP_EOL;
+echo "Deadline: " . ($analysis['deadline'] ?? 'N/A') . PHP_EOL;
+echo "Language: " . $analysis['language'] . PHP_EOL;
+echo "Excerpt: " . $analysis['raw_excerpt'] . PHP_EOL . PHP_EOL;
+
+echo "🚀 10-step Roadmap\n";
+echo "------------------\n";
+echo $agent->renderRoadmap($roadmap) . PHP_EOL;
