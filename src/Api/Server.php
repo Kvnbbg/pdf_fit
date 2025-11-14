@@ -13,7 +13,13 @@ final class Server
             throw new \RuntimeException('Unable to locate public directory.');
         }
 
-        $command = sprintf('php -S %s:%d -t %s', $host, $port, escapeshellarg($docRoot));
+        $host = trim($host);
+        if ($host === '') {
+            throw new \InvalidArgumentException('Host cannot be empty.');
+        }
+
+        $serverBinding = escapeshellarg(sprintf('%s:%d', $host, $port));
+        $command = sprintf('php -S %s -t %s', $serverBinding, escapeshellarg($docRoot));
         Logger::headline('PDF Fit API');
         Logger::info("Serving on http://{$host}:{$port} (Ctrl+C to stop)");
         passthru($command);
