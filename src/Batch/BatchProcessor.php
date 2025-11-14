@@ -15,6 +15,11 @@ final class BatchProcessor
 
         $results = [];
         $files = glob($directory . DIRECTORY_SEPARATOR . '*.[Pp][Dd][Ff]') ?: [];
+        $files = glob($directory . DIRECTORY_SEPARATOR . '*.pdf') ?: [];
+
+        if ($files === []) {
+            return $results;
+        }
 
         foreach ($files as $file) {
             $pipeline = new Pipeline($mode, $file, $options);

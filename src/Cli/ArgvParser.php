@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace PdfFit\Cli;
 
 use InvalidArgumentException;
@@ -10,6 +12,8 @@ final class ArgvParser
     {
         $args = $argv;
         array_shift($args); // remove script name
+        array_shift($args);
+
         if (empty($args)) {
             throw new InvalidArgumentException($this->usage());
         }
@@ -24,6 +28,7 @@ final class ArgvParser
     private function extractOptions(array $args): array
     {
         $params = [];
+        $options = [];
         $target = null;
 
         while (!empty($args)) {
@@ -41,6 +46,61 @@ final class ArgvParser
         }
 
         return ['__target' => $target, 'params' => $params];
+
+            if (str_starts_with($arg, '--')) {
+                $options = $this->storeOption($options, $arg, $args);
+            } elseif ($target === null) {
+                $target = $arg;
+            } else {
+                $options[] = $arg;
+            }
+        }
+
+        return [$command, $target, $options];
+    }
+
+    private function storeOption(array $options, string $arg, array &$args): array
+    {
+        [$key, $value] = $this->splitOption($arg, $args);
+        $options[$key] = $value;
+
+        return $options;
+    }
+
+    private function splitOption(string $arg, array &$args): array
+    {
+        $trimmed = substr($arg, 2);
+
+        if (str_contains($trimmed, '=')) {
+            [$key, $value] = explode('=', $trimmed, 2);
+            return [$key, $this->normalizeValue($value)];
+        }
+
+        $key = $trimmed;
+        if (!empty($args) && !str_starts_with($args[0], '--')) {
+            $value = array_shift($args);
+            return [$key, $this->normalizeValue($value)];
+        }
+
+        return [$key, true];
+    }
+
+    private function normalizeValue(string $value): mixed
+    {
+        if (is_numeric($value)) {
+            return $value + 0;
+        }
+
+        $lower = strtolower($value);
+        if ($lower === 'true') {
+            return true;
+        }
+
+        if ($lower === 'false') {
+            return false;
+        }
+
+        return $value;
     }
 
     private function usage(): string

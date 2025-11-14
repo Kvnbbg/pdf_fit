@@ -11,6 +11,9 @@ foreach ([
         break;
     }
 }
+declare(strict_types=1);
+
+require __DIR__ . '/../autoload.php';
 
 use PdfFit\Api\Server;
 use PdfFit\Batch\BatchProcessor;
@@ -37,6 +40,10 @@ switch ($command) {
         }
         $mode = $options['mode'] ?? 'smart';
         unset($options['mode']);
+
+        $mode = $options['mode'] ?? 'smart';
+        unset($options['mode']);
+
         $results = BatchProcessor::runDirectory($target, $mode, $options);
         Logger::printBatchSummary($results);
         exit(0);
@@ -45,6 +52,7 @@ switch ($command) {
         $host = $options['host'] ?? '0.0.0.0';
         $port = (int) ($options['port'] ?? 8080);
         $docRoot = $target;
+
         Server::run($host, $port, $docRoot);
         exit(0);
 
@@ -53,6 +61,7 @@ switch ($command) {
             fwrite(STDERR, "Command {$command} requires a target file.\n");
             exit(1);
         }
+
         $pipeline = new Pipeline($command, $target, $options);
         $result = $pipeline->run();
         Logger::printSummary($result);

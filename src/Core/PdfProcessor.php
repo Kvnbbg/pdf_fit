@@ -6,6 +6,7 @@ final class PdfProcessor
 {
     public static function process(array $pdf, array $strategy): array
     {
+        $ghostscript = Utils::commandExists('gs');
         $context = [
             'binary'   => $pdf['binary'],
             'strategy' => $strategy,
@@ -15,6 +16,8 @@ final class PdfProcessor
         if (!Utils::commandExists('gs')) {
             Logger::warn('Ghostscript not detected on PATH. Skipping PDF transformation.');
             $context['notes'][] = 'Ghostscript unavailable; original file returned.';
+        if (!$ghostscript) {
+            $context['notes'][] = 'Ghostscript unavailable, returning original binary.';
             return $context;
         }
 
@@ -44,6 +47,37 @@ final class PdfProcessor
                 $context['binary'] = is_string($processed) ? $processed : $pdf['binary'];
             }
 
+        file_put_contents($input, $pdf['binary']);
+        $output = Utils::tempFile('.pdf');
+
+        try {
+            $type = $strategy['type'] ?? 'none';
+            $command = match ($type) {
+                'compress' => self::buildCompressCommand($input, $output, $strategy),
+                'resize'   => self::buildResizeCommand($input, $output, $strategy),
+                'extreme'  => self::buildExtremeCommand($input, $output),
+                default    => null,
+            };
+
+            if ($command === null) {
+                $context['notes'][] = 'No processing command generated.';
+                return $context;
+            }
+
+            $result = shell_exec($command);
+            if (!is_string($result)) {
+                $context['notes'][] = 'Ghostscript execution returned no output, using original.';
+                return $context;
+            }
+
+            $processed = file_get_contents($output);
+            if (!is_string($processed) || $processed === '') {
+                $context['notes'][] = 'Ghostscript output empty, using original.';
+                return $context;
+            }
+
+            $context['binary'] = $processed;
+            $context['notes'][] = 'Ghostscript pipeline executed successfully.';
             return $context;
         } finally {
             @unlink($input);
