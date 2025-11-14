@@ -16,6 +16,12 @@ try {
 }
 
 $pipeline = new Pipeline($mode, $file, $options);
-$result = $pipeline->run();
+
+try {
+    $result = $pipeline->run();
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'Error: ' . $exception->getMessage() . "\n");
+    exit(1);
+}
 
 Logger::printSummary($result);
