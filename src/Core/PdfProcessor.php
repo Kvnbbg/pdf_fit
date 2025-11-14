@@ -13,11 +13,9 @@ final class PdfProcessor
             'notes'    => [],
         ];
 
-        if (!Utils::commandExists('gs')) {
+        if (!$ghostscript) {
             Logger::warn('Ghostscript not detected on PATH. Skipping PDF transformation.');
             $context['notes'][] = 'Ghostscript unavailable; original file returned.';
-        if (!$ghostscript) {
-            $context['notes'][] = 'Ghostscript unavailable, returning original binary.';
             return $context;
         }
 
@@ -30,54 +28,21 @@ final class PdfProcessor
             $command = self::buildCommand($strategy['type'] ?? 'none', $input, $output, $strategy);
             if ($command === null) {
                 $context['notes'][] = 'No transformation required for this strategy.';
-                copy($input, $output);
+                return $context;
+            }
+
+            exec($command, $outputLines, $exitCode);
+            $processed = is_file($output) ? file_get_contents($output) : false;
+
+            if ($exitCode !== 0 || !is_string($processed) || $processed === '') {
+                Logger::warn('Ghostscript command failed; falling back to original payload.');
+                $context['notes'][] = 'Ghostscript command failed; original binary preserved.';
+                $processed = $pdf['binary'];
             } else {
-                exec($command, $outputLines, $exitCode);
-                $processed = is_file($output) ? file_get_contents($output) : false;
-
-                if ($exitCode !== 0 || !is_string($processed) || $processed === '') {
-                    Logger::warn('Ghostscript command failed; falling back to original payload.');
-                    $context['notes'][] = 'Ghostscript command failed; original binary preserved.';
-                    copy($input, $output);
-                    $processed = $pdf['binary'];
-                } else {
-                    $context['notes'][] = 'Ghostscript pipeline executed successfully.';
-                }
-
-                $context['binary'] = is_string($processed) ? $processed : $pdf['binary'];
+                $context['notes'][] = 'Ghostscript pipeline executed successfully.';
             }
 
-        file_put_contents($input, $pdf['binary']);
-        $output = Utils::tempFile('.pdf');
-
-        try {
-            $type = $strategy['type'] ?? 'none';
-            $command = match ($type) {
-                'compress' => self::buildCompressCommand($input, $output, $strategy),
-                'resize'   => self::buildResizeCommand($input, $output, $strategy),
-                'extreme'  => self::buildExtremeCommand($input, $output),
-                default    => null,
-            };
-
-            if ($command === null) {
-                $context['notes'][] = 'No processing command generated.';
-                return $context;
-            }
-
-            $result = shell_exec($command);
-            if (!is_string($result)) {
-                $context['notes'][] = 'Ghostscript execution returned no output, using original.';
-                return $context;
-            }
-
-            $processed = file_get_contents($output);
-            if (!is_string($processed) || $processed === '') {
-                $context['notes'][] = 'Ghostscript output empty, using original.';
-                return $context;
-            }
-
-            $context['binary'] = $processed;
-            $context['notes'][] = 'Ghostscript pipeline executed successfully.';
+            $context['binary'] = is_string($processed) ? $processed : $pdf['binary'];
             return $context;
         } finally {
             @unlink($input);
