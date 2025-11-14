@@ -2,7 +2,9 @@
 
 **Tech & Stream** · Kevin Marville
 
-A production-ready toolkit for compressing, resizing, and orchestrating PDF workflows. Built in PHP, structured like Python, branded for the Tech & Stream ecosystem.
+A production-ready toolkit for compressing, resizing, and orchestrating PDF workflows. Built in PHP, structured like Python, branded for the Tech & Stream ecosystem
+
+API: https://github.com/kvnbbg/friendly-system
 
 ---
 
