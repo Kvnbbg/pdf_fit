@@ -14,8 +14,7 @@ final class BatchProcessor
         }
 
         $results = [];
-        $files = glob($directory . DIRECTORY_SEPARATOR . '*.[Pp][Dd][Ff]') ?: [];
-        $files = glob($directory . DIRECTORY_SEPARATOR . '*.pdf') ?: [];
+        $files = glob($directory . DIRECTORY_SEPARATOR . '*.{pdf,PDF}', GLOB_BRACE) ?: [];
 
         if ($files === []) {
             return $results;
